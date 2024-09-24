@@ -1,19 +1,5 @@
 ﻿using UnityEngine;
 
-public struct GridConfig
-{
-    public float gridSize;
-    public float ringGap;
-    public int numberOfRings;
-
-    public GridConfig(float gridSize = 5f, float ringGap = 5, int numberOfRings = 3)
-    {
-        this.gridSize = gridSize;
-        this.ringGap = ringGap;
-        this.numberOfRings = numberOfRings;
-    }
-}
-
 public class GridCoordsUtility
 {
 
@@ -46,7 +32,7 @@ public class GridCoordsUtility
             }
         }
 
-        if(minDistance > 20)
+        if(minDistance > 10)
         {
             return new Vector2Int(-1, -1);
         }

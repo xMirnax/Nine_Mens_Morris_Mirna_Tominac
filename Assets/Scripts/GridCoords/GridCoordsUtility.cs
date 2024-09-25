@@ -1,7 +1,10 @@
-﻿using UnityEngine;
+﻿using Unity.Burst.CompilerServices;
+using UnityEngine;
 
 public class GridCoordsUtility
 {
+    public static Vector2Int INVALID_CORD = new Vector2Int(-1,-1);
+
 
     private static readonly Vector2[] directions = new Vector2[]
     {
@@ -32,9 +35,9 @@ public class GridCoordsUtility
             }
         }
 
-        if(minDistance > 10)
+        if(minDistance > 20)
         {
-            return new Vector2Int(-1, -1);
+            return INVALID_CORD;
         }
         return closestCoords;
     }
@@ -48,5 +51,10 @@ public class GridCoordsUtility
         float ringSize = (ring + 1) * (2.5f + gridConfig.ringGap); 
         Vector2 direction = directions[position];
         return direction * ringSize;
+    }
+
+    public static bool IsCoordValid(Vector2Int boardCoords)
+    {
+        return boardCoords != INVALID_CORD;
     }
 }

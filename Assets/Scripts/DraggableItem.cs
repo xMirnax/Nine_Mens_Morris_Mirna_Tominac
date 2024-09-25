@@ -1,19 +1,36 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class DraggableItem : MonoBehaviour
 {
-    private bool isDragging = false;
-    private Vector3 offset;
+    private static DraggableItem holdingItem = null;
 
-    public static event Action<DraggableItem, Vector2> onItemDrop;
+    private bool isDragging = false;
+    private Vector2 offset;
+
+    public UnityEvent onPick;
+    public UnityEvent onDrop;
+
+    private SpriteRenderer renderer;
+
+    private void Start()
+    {
+        renderer = GetComponent<SpriteRenderer>();
+    }
 
     private void OnMouseDown()
     {
-        offset = transform.position - GetMouseWorldPos();
-        isDragging = true;
+
+
+        if (holdingItem == null)
+        {
+            renderer.sortingOrder = 1000;
+            offset = (Vector2)transform.position - GetMouseWorldPos();
+            isDragging = true;
+            onPick.Invoke();
+            holdingItem = this;
+        }
+
     }
 
     private void OnMouseDrag()
@@ -26,21 +43,19 @@ public class DraggableItem : MonoBehaviour
 
     private void OnMouseUp()
     {
-        if (isDragging)
+        if (holdingItem == this)
         {
-            Vector2 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            Vector2Int boardCoords = GridCoordsUtility.GetBoardCoords(SettingsManager.Instance.GetGridConfig(), GetMouseWorldPos());
-
-            onItemDrop?.Invoke(this, boardCoords);
-
             isDragging = false;
+            holdingItem = null;
+            onDrop.Invoke();
+            renderer.sortingOrder = 2;
         }
     }
 
-    private Vector3 GetMouseWorldPos()
+    private Vector2 GetMouseWorldPos()
     {
-        Vector3 mousePoint = Input.mousePosition;
-        mousePoint.z = Camera.main.WorldToScreenPoint(transform.position).z;
-        return Camera.main.ScreenToWorldPoint(mousePoint);
+        return Camera.main.ScreenToWorldPoint(Input.mousePosition);
     }
+
+
 }

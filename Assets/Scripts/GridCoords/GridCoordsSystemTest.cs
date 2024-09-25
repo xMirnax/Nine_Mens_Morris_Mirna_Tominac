@@ -4,6 +4,7 @@ public class GridCoordsSystemTest : MonoBehaviour
 {
     public Color lineColor = Color.white;
     public GameObject prefab;
+    [SerializeField] GameObject linesParent;
 
     void Start()
     {
@@ -23,7 +24,7 @@ public class GridCoordsSystemTest : MonoBehaviour
                 Vector2Int boardCoords = GridCoordsUtility.GetBoardCoords(gridConfig, worldPos);
                 //Debug.Log($"Grid: ({ring},{i}) -> World: {worldPos} -> Board: {boardCoords}");
 
-                InstantiatePrefab(worldPos, $"Grid: {ring},{i}\nBoard: {boardCoords.x},{boardCoords.y}");
+                InstantiatePrefab(worldPos, $"{boardCoords.x},{boardCoords.y}");
 
                 Vector2Int nextCoords = new Vector2Int(ring, (i + 1) % 8);
                 Vector2 nextWorldPos = GridCoordsUtility.GetWorldCoords(nextCoords, gridConfig);
@@ -44,6 +45,9 @@ public class GridCoordsSystemTest : MonoBehaviour
     private void DrawLineInGameView(Vector3 start, Vector3 end, Color color)
     {
         GameObject lineObject = new GameObject("Line");
+
+        lineObject.transform.parent = linesParent.transform;
+
         LineRenderer lineRenderer = lineObject.AddComponent<LineRenderer>();
         lineRenderer.positionCount = 2;
         lineRenderer.SetPosition(0, start);

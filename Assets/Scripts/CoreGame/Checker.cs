@@ -1,24 +1,36 @@
 using UnityEngine;
 
+public enum Player
+{
+    Player1,
+    Player2
+}
+
 public class Checker : MonoBehaviour
 {
+    public Player player;
 
     private Vector2 originalPosition;
 
-    private void Start()
-    {
-        BoardManager.Instance.RegisterChecker(this);
-    }
+    private SpriteRenderer spriteRenderer;
+    private string name;
 
+    DraggableItem draggableItem;
+
+    public void InitializePlayer(PlayerData data)
+    {
+        spriteRenderer.color = data.color;
+    }
 
     private void Awake()
     {
         originalPosition = transform.position;
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     private void OnEnable()
     {
-        DraggableItem draggableItem = GetComponent<DraggableItem>();
+        draggableItem = GetComponent<DraggableItem>();
         if (draggableItem != null)
         {
             draggableItem.onDrop.AddListener(OnCheckerDrop);
@@ -28,7 +40,6 @@ public class Checker : MonoBehaviour
 
     private void OnDisable()
     {
-        DraggableItem draggableItem = GetComponent<DraggableItem>();
         if (draggableItem != null)
         {
             draggableItem.onDrop.RemoveListener(OnCheckerDrop);
@@ -52,6 +63,11 @@ public class Checker : MonoBehaviour
 
     private void OnCheckerPick()
     {
+    }
+
+    public void DraggingEnabler(Player _player)
+    {
+        draggableItem.SetEnabled(_player == player);
     }
 
 

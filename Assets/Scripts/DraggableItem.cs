@@ -13,6 +13,13 @@ public class DraggableItem : MonoBehaviour
 
     private SpriteRenderer renderer;
 
+    private bool enabled = true;
+
+
+    public void SetEnabled(bool enabled)
+    {
+        this.enabled = enabled;
+    }
     private void Start()
     {
         renderer = GetComponent<SpriteRenderer>();
@@ -20,7 +27,10 @@ public class DraggableItem : MonoBehaviour
 
     private void OnMouseDown()
     {
-
+        if (!enabled)
+        {
+            return;
+        }
 
         if (holdingItem == null)
         {
@@ -30,11 +40,15 @@ public class DraggableItem : MonoBehaviour
             onPick.Invoke();
             holdingItem = this;
         }
-
     }
 
     private void OnMouseDrag()
     {
+        if (!enabled)
+        {
+            return;
+        }
+
         if (isDragging)
         {
             transform.position = GetMouseWorldPos() + offset;
@@ -43,6 +57,11 @@ public class DraggableItem : MonoBehaviour
 
     private void OnMouseUp()
     {
+        if (!enabled)
+        {
+            return;
+        }
+
         if (holdingItem == this)
         {
             isDragging = false;

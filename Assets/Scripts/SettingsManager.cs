@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
 
 [System.Serializable]
@@ -26,6 +27,7 @@ public class SettingsManager : MonoBehaviourSingleton<SettingsManager>
     public PlayerData player1;
     public PlayerData player2;
 
+
     public PlayerData GetPlayerData(Player player)
     {
         if (player == Player.Player1)
@@ -37,6 +39,7 @@ public class SettingsManager : MonoBehaviourSingleton<SettingsManager>
 
     public GridConfig GetGridConfig()
     {
+        gridConfig.numberOfCheckers = gridConfig.numberOfRings * 3;
         return gridConfig;
     }
 

@@ -841,6 +841,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a73c7096b26e00429fd97b538709769, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  OnPlayerTurnChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  onGameStateChange:
+    m_PersistentCalls:
+      m_Calls: []
+  onMillFormed:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &1555684156
 MonoBehaviour:
   m_ObjectHideFlags: 0

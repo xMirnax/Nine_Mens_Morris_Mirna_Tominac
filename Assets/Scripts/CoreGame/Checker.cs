@@ -61,13 +61,22 @@ public class Checker : MonoBehaviour
         }
     }
 
-    private void OnCheckerPick()
+    public void OnCheckerPick()
     {
+        if(BoardManager.Instance.currentState == GameState.RemovalPhase && this.player != BoardManager.Instance.currentPlayer)
+        {
+            BoardManager.Instance.RemoveChecker(this);
+        }
     }
 
     public void DraggingEnabler(Player _player)
     {
         draggableItem.SetEnabled(_player == player);
+    }
+
+    public void SetDraggingEnabled(bool enabled)
+    {
+        draggableItem.SetEnabled(enabled);
     }
 
 

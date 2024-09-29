@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -10,6 +11,29 @@ public class UIManager : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI turnIndicatorText;
     [SerializeField] private TextMeshProUGUI phaseIndicatorText;
+
+    private void OnEnable()
+    {
+        BoardManager.Instance.onGameStateChange.AddListener(StateChange);
+        BoardManager.Instance.OnPlayerTurnChanged.AddListener(PlayerTurn);
+    }
+
+
+    private void OnDisable()
+    {
+        BoardManager.Instance.onGameStateChange.RemoveListener(StateChange);
+        BoardManager.Instance.OnPlayerTurnChanged.RemoveListener(PlayerTurn);
+    }
+    private void PlayerTurn(Player player)
+    {
+        turnIndicatorText.text = player.ToString();
+    }
+
+    private void StateChange(GameState gameState)
+    {
+        phaseIndicatorText.text = gameState.ToString();
+    }
+
 
     private void Start()
     {

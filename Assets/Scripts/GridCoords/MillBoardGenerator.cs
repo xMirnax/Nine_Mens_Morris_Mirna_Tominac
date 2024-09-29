@@ -11,7 +11,7 @@ public class MillBoardGenerator : MonoBehaviour
     [SerializeField] private Transform player1Checkers;
     [SerializeField] private Transform player2Checkers;
 
-    public float startingCheckerOffset = 1.0f;
+    public float startingCheckerOffset = 0.0f;
 
     GridConfig gridConfig;
 

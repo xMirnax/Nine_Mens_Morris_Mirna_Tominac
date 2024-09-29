@@ -12,10 +12,14 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI turnIndicatorText;
     [SerializeField] private TextMeshProUGUI phaseIndicatorText;
 
+    [SerializeField] private GameObject winingPanel;
+    [SerializeField] private TextMeshProUGUI winingText;
+
     private void OnEnable()
     {
         BoardManager.Instance.onGameStateChange.AddListener(StateChange);
         BoardManager.Instance.OnPlayerTurnChanged.AddListener(PlayerTurn);
+        BoardManager.Instance.OnPlayerWon.AddListener(PlayerWon);
     }
 
 
@@ -23,6 +27,7 @@ public class UIManager : MonoBehaviour
     {
         BoardManager.Instance.onGameStateChange.RemoveListener(StateChange);
         BoardManager.Instance.OnPlayerTurnChanged.RemoveListener(PlayerTurn);
+        BoardManager.Instance.OnPlayerWon.RemoveListener(PlayerWon);
     }
     private void PlayerTurn(Player player)
     {
@@ -31,7 +36,25 @@ public class UIManager : MonoBehaviour
 
     private void StateChange(GameState gameState)
     {
-        phaseIndicatorText.text = gameState.ToString();
+
+        if(gameState == GameState.PlacementPhase)
+        {
+            phaseIndicatorText.text = "Place piece";
+        }
+        else if(gameState == GameState.MovementPhase)
+        {
+            phaseIndicatorText.text = "Move piece";
+        }
+        else
+        {
+            phaseIndicatorText.text = "Remove other player's piece";
+        }
+    }
+
+    private void PlayerWon(Player player)
+    {
+        winingPanel.gameObject.SetActive(true);
+        winingText.text = $"{player.ToString()} Wins!";
     }
 
 

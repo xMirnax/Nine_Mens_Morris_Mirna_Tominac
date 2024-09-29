@@ -1,17 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using Unity.Collections.LowLevel.Unsafe;
-using UnityEngine;
-using UnityEngine.Events;
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Linq;
+    using Unity.Collections.LowLevel.Unsafe;
+    using UnityEngine;
+    using UnityEngine.Events;
 
-public enum GameState
-{
-    PlacementPhase,
-    MovementPhase,
-    RemovalPhase
-}
+    public enum GameState
+    {
+        PlacementPhase,
+        MovementPhase,
+        RemovalPhase
+    }
 
 public class BoardManager : MonoBehaviourSingleton<BoardManager>
 {
@@ -25,6 +26,7 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
     public UnityEvent<Player> OnPlayerTurnChanged = new UnityEvent<Player>();
     public UnityEvent<GameState> onGameStateChange;
     public UnityEvent onMillFormed;
+    public UnityEvent<Player> OnPlayerWon = new UnityEvent<Player>();
 
     private List<Checker> checkersList = new List<Checker>();
 
@@ -33,7 +35,7 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
     new int[] { 2, 3, 4 },
     new int[] { 4, 5, 6 },
     new int[] { 6, 7, 0 }
-};
+    };
 
 
     private void OnEnable()
@@ -66,9 +68,20 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
 
     public void TurnBegin(Player playerOnTurn)
     {
+        bool allCheckersInMill = AreAllCheckersInMill();
+
         foreach (Checker checker in checkersList)
         {
-            checker.DraggingEnabler(playerOnTurn);
+            if(checker.player == playerOnTurn)
+            {
+                checker.SetDraggingEnabled(true);
+            }
+            else
+            {
+                checker.SetDraggingEnabled(false);
+            }
+
+            checker.SetAvaliable(false);
         }
 
     }
@@ -97,32 +110,74 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         }
     }
 
-    public void PlaceChecker(Checker checker, Vector2Int coord)
+    public void PlaceChecker(Checker checker, Vector2Int to)
     {
-        if (currentState != GameState.PlacementPhase)
+        if (CanMoveChecker(checker, to))
         {
-            Debug.LogWarning("Attempted to place checker outside of placement phase.");
-            return;
+            if (currentState == GameState.PlacementPhase)
+            {
+                PlaceCheckerDuringPlacementPhase(checker, to);
+            }
+            else if (currentState == GameState.MovementPhase)
+            {
+                MoveChecker(checker, to);
+            }
+        }
+        else
+        {
+            Debug.LogError("Trying to do invalid move in PlaceChecker");
         }
 
-        if (IsCoordValid(coord))
+    }
+
+    public bool CanMoveChecker(Checker checker, Vector2Int to)
+    {
+        if (currentState == GameState.PlacementPhase)
         {
-            int playerIndex = currentPlayer == Player.Player1 ? 0 : 1;
-            remainingPieces[playerIndex]--;
-            checkers[coord.x, coord.y] = checker;
-            if (isMillFormed(checker))
-            {
-                MillFormed();
-            }
-            else
-            {
-                EndTurn();
-            }
-            if (remainingPieces[0] == 0 && remainingPieces[1] == 0)
-            {
-                currentState = GameState.MovementPhase;
-                onGameStateChange?.Invoke(currentState);
-            }
+            return (IsCoordValid(to) && GetChecker(to) == null && GetCheckerCoord(checker) == GridCoordsUtility.INVALID_CORD);
+        }
+        else if (currentState == GameState.MovementPhase)
+        {
+            Vector2Int from = GetCheckerCoord(checker);
+            return IsValidMove(from, to);
+        }
+        else 
+        {
+            Debug.LogError("Invalid State in CanMoveChecker");
+            return false; 
+        }
+    }
+
+    private void PlaceCheckerDuringPlacementPhase(Checker checker, Vector2Int to)
+    {
+        int playerIndex = currentPlayer == Player.Player1 ? 0 : 1;
+        remainingPieces[playerIndex]--;
+        checkers[to.x, to.y] = checker;
+        if (isMillFormed(checker))
+        {
+            MillFormed();
+        }
+        else
+        {
+            EndTurn();
+        }
+    }
+
+    private void MoveChecker(Checker checker, Vector2Int to)
+    {
+        Vector2Int from = GetCheckerCoord(checker);
+        checkers[from.x, from.y] = null;
+
+        checkers[to.x, to.y] = checker;
+        checker.transform.position = slots[to.x, to.y].transform.position;
+
+        if (isMillFormed(checker))
+        {
+            MillFormed();
+        }
+        else
+        {
+            EndTurn();
         }
     }
 
@@ -133,42 +188,36 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         EnableOpponentCheckerRemoval();
     }
 
-    private void EnableOpponentCheckerRemoval()
+    private bool CanCheckerBeRemoved(Checker checker, bool enableInMill)
     {
-        Player opponent = (currentPlayer == Player.Player1) ? Player.Player2 : Player.Player1;
-        bool allCheckersInMill = true;
+        bool isOpponent = checker.player != currentPlayer;
+        bool isInMill = isMillFormed(checker);
+        bool isOnBoard = GridCoordsUtility.IsCoordValid(GetCheckerCoord(checker));
+        return isOpponent && (!isInMill || enableInMill) && isOnBoard;
+    }
 
+    private bool AreAllCheckersInMill()
+    {
         foreach (Checker checker in checkersList)
         {
-            if (checker.player == opponent)
-            {
-                Vector2Int coord = GetCheckerCoord(checker);
+            Vector2Int coord = GetCheckerCoord(checker);
 
-                if (!isMillFormed(checker))
-                {
-                    checker.SetDraggingEnabled(true);
-                    allCheckersInMill = false;
-                }
-                else
-                {
-                    checker.SetDraggingEnabled(false);
-                }
-            }
-            else
+            if (!isMillFormed(checker) && GridCoordsUtility.IsCoordValid(coord))
             {
-                checker.SetDraggingEnabled(false);
+                return false;
             }
         }
+        return true;
+    }
 
-        if (allCheckersInMill)
+    private void EnableOpponentCheckerRemoval()
+    {
+        bool allCheckersInMill = AreAllCheckersInMill();
+        foreach (Checker checker in checkersList)
         {
-            foreach (Checker checker in checkersList)
-            {
-                if (checker.player == opponent)
-                {
-                    checker.SetDraggingEnabled(true);
-                }
-            }
+            bool canBeRemoved = CanCheckerBeRemoved(checker, allCheckersInMill);
+            checker.SetDraggingEnabled(canBeRemoved);
+            checker.SetAvaliable(canBeRemoved);
         }
     }
 
@@ -197,35 +246,50 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
                 return true;
             }
         }
+
+        // If there is an between ring mill
+        // Only on odd positions
+        if(pos % 2 == 1)
+        {
+            bool allTheSame = true;
+            for(int r = 0; r < gridConfig.numberOfRings; r++)
+            {
+                if(checkers[r, pos] == null || checkers[r, pos].player != player)
+                {
+                    allTheSame = false;
+                    break;
+                }
+            }
+            if (allTheSame)
+                return true;
+        }
+
+
         return false;
+    }
+
+    public void PhaseTransition()
+    {
+        if (remainingPieces[0] == 0 && remainingPieces[1] == 0)
+        {
+            currentState = GameState.MovementPhase;
+            onGameStateChange?.Invoke(currentState);
+        }
+        else
+        {
+            currentState = GameState.PlacementPhase;
+            onGameStateChange?.Invoke(currentState);
+        }
     }
 
     public void EndTurn()
     {
         SwitchPlayerTurn();
-        OnPlayerTurnChanged.Invoke(currentPlayer);
-
-        foreach (Checker checker in checkersList)
+        CheckGameOverConditions();
+        PhaseTransition();
+        if (currentState != GameState.RemovalPhase) 
         {
-            bool found = false;
-
-            for (int i = 0; i < checkers.GetLength(0); i++)
-            {
-                for (int j = 0; j < checkers.GetLength(1); j++)
-                {
-                    if (checkers[i, j] == checker)
-                    {
-                        found = true;
-                        checker.SetDraggingEnabled(false);
-                        break;
-                    }
-                }
-
-                if (found)
-                {
-                    break;
-                }
-            }
+            OnPlayerTurnChanged.Invoke(currentPlayer);
         }
     }
 
@@ -268,7 +332,7 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
                 checkersList.Remove(checker);
                 Destroy(checker.gameObject);
 
-                currentState = GameState.PlacementPhase;
+                PhaseTransition();
                 onGameStateChange?.Invoke(currentState);
                 EndTurn();
             }
@@ -285,4 +349,65 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
         currentPlayer = currentPlayer == Player.Player1 ? Player.Player2 : Player.Player1;
     }
 
+    public bool IsValidMove(Vector2Int from, Vector2Int to)
+    {
+        if (!IsCoordValid(from) || !IsCoordValid(to)) 
+            return false;
+
+
+        if (GetChecker(to) != null)
+        {
+            return false;
+        }
+
+        // Check if the move is within the same ring
+        if (from.x == to.x)
+        {
+            int diff = Mathf.Abs(from.y - to.y);
+            return diff == 1 || diff == 7;
+        }
+
+        // Check if the move is between adjacent rings
+        if (Mathf.Abs(from.x - to.x) == 1)
+        {
+            return from.y == to.y;
+        }
+
+        return false;
+    }
+
+
+    private void CheckGameOverConditions()
+    {
+        int player1Checkers = 0;
+        int player2Checkers = 0;
+
+        foreach (Checker checker in checkersList)
+        {
+            if (checker.player == Player.Player1)
+            {
+                player1Checkers++;
+            }
+            else
+            {
+                player2Checkers++;
+            }
+        }
+
+        if (player1Checkers < 3)
+        {
+            EndGame(Player.Player2);
+        }
+        else if (player2Checkers < 3)
+        {
+            EndGame(Player.Player1);
+        }
+    }
+
+
+    private void EndGame(Player winner)
+    {
+        OnPlayerWon?.Invoke(winner);
+        Debug.Log($"Game Over! {winner} wins!");
+    }
 }

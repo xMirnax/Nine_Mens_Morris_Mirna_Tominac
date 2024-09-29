@@ -13,7 +13,6 @@ public class Checker : MonoBehaviour
     private Vector2 originalPosition;
 
     private SpriteRenderer spriteRenderer;
-    private string name;
 
     DraggableItem draggableItem;
 
@@ -51,7 +50,7 @@ public class Checker : MonoBehaviour
     {
         Vector2Int gridCoords = GridCoordsUtility.GetBoardCoords(SettingsManager.Instance.GetGridConfig(), transform.position);
 
-        if (GridCoordsUtility.IsCoordValid(gridCoords))
+        if (GridCoordsUtility.IsCoordValid(gridCoords) && BoardManager.Instance.CanMoveChecker(this,gridCoords))
         {
             PlaceInSlot(gridCoords);
         }
@@ -67,11 +66,6 @@ public class Checker : MonoBehaviour
         {
             BoardManager.Instance.RemoveChecker(this);
         }
-    }
-
-    public void DraggingEnabler(Player _player)
-    {
-        draggableItem.SetEnabled(_player == player);
     }
 
     public void SetDraggingEnabled(bool enabled)
@@ -105,5 +99,11 @@ public class Checker : MonoBehaviour
     public void SetOriginalPosition(Vector2 position)
     {
         originalPosition = position;
+    }
+
+    public void SetAvaliable(bool avaliable)
+    {
+        Animator animator = GetComponent<Animator>();
+        animator.SetBool("animate", avaliable);
     }
 }

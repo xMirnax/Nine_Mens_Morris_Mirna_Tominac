@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5005384386881130900}
   - component: {fileID: 472210644432919531}
   - component: {fileID: 4052289218248349742}
+  - component: {fileID: 3410316085754270135}
   m_Layer: 0
   m_Name: checkers2_0
   m_TagString: Untagged
@@ -156,3 +157,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: 0
+--- !u!95 &3410316085754270135
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9124212116147154620}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 6e29b31953a474f4f9236275a757a476, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

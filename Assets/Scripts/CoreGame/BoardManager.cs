@@ -6,6 +6,7 @@
     using Unity.Collections.LowLevel.Unsafe;
     using UnityEngine;
     using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
     public enum GameState
     {
@@ -24,7 +25,7 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
     private int[] remainingPieces;
 
     public UnityEvent<Player> OnPlayerTurnChanged = new UnityEvent<Player>();
-    public UnityEvent<GameState> onGameStateChange;
+    public UnityEvent<GameState> onGameStateChange = new UnityEvent<GameState>();
     public UnityEvent onMillFormed;
     public UnityEvent<Player> OnPlayerWon = new UnityEvent<Player>();
 
@@ -36,7 +37,6 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
     new int[] { 4, 5, 6 },
     new int[] { 6, 7, 0 }
     };
-
 
     private void OnEnable()
     {
@@ -51,15 +51,28 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
 
     private void Start()
     {
-        InitializeGame();
+        InitializeState();
+        StartGame();
     }
 
-    private void InitializeGame()
+    public void ResetState()
+    {
+        checkers = null;
+        slots = null;
+        remainingPieces = null;
+        checkersList.Clear();
+    }
+
+    public void InitializeState()
     {
         currentPlayer = Player.Player1;
         currentState = GameState.PlacementPhase;
-        int piecesPerPlayer = SettingsManager.Instance.GetGridConfig().numberOfCheckers;
+        int piecesPerPlayer = gridConfig.numberOfCheckers;
         remainingPieces = new int[] { piecesPerPlayer, piecesPerPlayer };
+    }
+
+    public void StartGame()
+    {
         RegisterChecker();
         onGameStateChange?.Invoke(currentState);
         OnPlayerTurnChanged?.Invoke(currentPlayer);
@@ -88,6 +101,8 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
 
     public void RegisterChecker()
     {
+        checkersList.Clear();
+
         Checker[] checkersArray = FindObjectsOfType<Checker>();
         foreach (Checker checker in checkersArray)
         {
@@ -360,6 +375,12 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
             return false;
         }
 
+        Checker checker = GetChecker(from);
+        if (GetRemainingPieces(checker.player) == 3)
+        {
+            return true;
+        }
+
         // Check if the move is within the same ring
         if (from.x == to.x)
         {
@@ -377,22 +398,24 @@ public class BoardManager : MonoBehaviourSingleton<BoardManager>
     }
 
 
-    private void CheckGameOverConditions()
+    private int GetRemainingPieces(Player player)
     {
-        int player1Checkers = 0;
-        int player2Checkers = 0;
-
+        int count = 0;
         foreach (Checker checker in checkersList)
         {
-            if (checker.player == Player.Player1)
+            if (checker.player == player)
             {
-                player1Checkers++;
-            }
-            else
-            {
-                player2Checkers++;
+                count++;
             }
         }
+        return count;
+
+    }
+
+    private void CheckGameOverConditions()
+    {
+        int player1Checkers = GetRemainingPieces(Player.Player1);
+        int player2Checkers = GetRemainingPieces(Player.Player2);
 
         if (player1Checkers < 3)
         {

@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour
@@ -15,12 +16,6 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject winingPanel;
     [SerializeField] private TextMeshProUGUI winingText;
 
-    private void OnEnable()
-    {
-        BoardManager.Instance.onGameStateChange.AddListener(StateChange);
-        BoardManager.Instance.OnPlayerTurnChanged.AddListener(PlayerTurn);
-        BoardManager.Instance.OnPlayerWon.AddListener(PlayerWon);
-    }
 
 
     private void OnDisable()
@@ -62,6 +57,10 @@ public class UIManager : MonoBehaviour
     {
         player1Text.text = SettingsManager.Instance.player1.name;
         player2Text.text = SettingsManager.Instance.player2.name;
+
+        BoardManager.Instance.onGameStateChange.AddListener(StateChange);
+        BoardManager.Instance.OnPlayerTurnChanged.AddListener(PlayerTurn);
+        BoardManager.Instance.OnPlayerWon.AddListener(PlayerWon);
     }
     private void UpdateUI()
     {

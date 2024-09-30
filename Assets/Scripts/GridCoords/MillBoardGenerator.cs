@@ -17,11 +17,14 @@ public class MillBoardGenerator : MonoBehaviour
 
     void Start()
     {
+        BoardManager.Instance.ResetState();
         gridConfig = SettingsManager.Instance.GetGridConfig();
+        BoardManager.Instance.InitializeState();
         BoardManager.Instance.InitializeBoard(gridConfig);
         DrawGrid();
         InstantiateCheckers(player1Checkers, Player.Player1);
         InstantiateCheckers(player2Checkers, Player.Player2);
+        BoardManager.Instance.StartGame();
     
     }
 

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections.LowLevel.Unsafe;
 using UnityEngine;
@@ -36,11 +36,22 @@ public class SettingsManager : MonoBehaviourSingleton<SettingsManager>
             return player2;
     }
 
+    public void SetPlayerData(Player player, PlayerData data)
+    {
+        if (player == Player.Player1)
+            player1 = data;
+        else
+            player2 = data;
+    }
 
     public GridConfig GetGridConfig()
     {
         gridConfig.numberOfCheckers = gridConfig.numberOfRings * 3;
         return gridConfig;
     }
-
+    public void SetGridConfig(GridConfig newConfig)
+    {
+        gridConfig = newConfig;
+        gridConfig.numberOfCheckers = gridConfig.numberOfRings * 3;
+    }
 }

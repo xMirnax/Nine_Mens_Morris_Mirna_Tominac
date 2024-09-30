@@ -16,6 +16,8 @@ public class Checker : MonoBehaviour
 
     DraggableItem draggableItem;
 
+    private Collider2D checkerCollider;
+
     public void InitializePlayer(PlayerData data)
     {
         spriteRenderer.color = data.color;
@@ -23,6 +25,7 @@ public class Checker : MonoBehaviour
 
     private void Awake()
     {
+        checkerCollider = GetComponent<Collider2D>();
         originalPosition = transform.position;
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
@@ -71,6 +74,10 @@ public class Checker : MonoBehaviour
     public void SetDraggingEnabled(bool enabled)
     {
         draggableItem.SetEnabled(enabled);
+        if (checkerCollider != null)
+        {
+            checkerCollider.enabled = enabled;
+        }
     }
 
 
